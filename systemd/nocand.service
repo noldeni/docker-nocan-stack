@@ -1,0 +1,30 @@
+[Unit]
+Description=NoCAN Daemon
+ConditionPathExists=/usr/local/bin/nocand
+After=network.target
+ 
+[Service]
+Type=simple
+User=nocand
+Group=nocand
+LimitNOFILE=1024
+
+Restart=on-failure
+RestartSec=10
+startLimitIntervalSec=60
+
+WorkingDirectory=/etc/nocand
+ExecStart=/usr/local/bin/nocand server -config /etc/nocand/config -log-file /var/log/nocand/nocand.log -log-level WARNING -log-terminal none -power-monitoring-interval 30
+
+# make sure log directory exists and owned by syslog
+PermissionsStartOnly=true
+ExecStartPre=/bin/mkdir -p /var/log/nocand
+ExecStartPre=/bin/chown nocand:nocand /var/log/nocand
+ExecStartPre=/bin/chmod 755 /var/log/nocand
+#StandardOutput=syslog
+#StandardError=syslog
+#SyslogIdentifier=nocand
+ 
+[Install]
+WantedBy=multi-user.target
+

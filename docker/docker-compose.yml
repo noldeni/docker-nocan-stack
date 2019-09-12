@@ -1,0 +1,73 @@
+version: '3'
+ 
+services:
+    mosquitto:
+        image: eclipse-mosquitto:1.5
+        container_name: mosquitto
+        hostname: mosquitto
+        restart: always
+        ports:
+            - "1883:1883"
+            - "9001:9001"
+        volumes:
+            - "/etc/localtime:/etc/localtime:ro"
+            - "./mosquitto/conf/mosquitto.conf:/mosquitto/config/mosquitto.conf"
+            - "./mosquitto/data:/mosquitto/data"
+            - "./mosquitto/log:/mosquitto/log" 
+
+    influxdb:
+        image: influxdb:latest
+        container_name: influxdb
+        hostname: influxdb
+        restart: always
+        ports:
+            - '8083:8083'
+            - '8086:8086'
+            - '8090:8090'
+        env_file:
+            - './influxdb/conf/env.influxdb'
+        volumes:
+            - '/etc/localtime:/etc/localtime:ro'
+            - './influxdb/conf/influxdb.conf:/etc/influxdb/influxdb.conf:ro'
+            - './influxdb/data:/var/lib/influxdb'
+
+    grafana:
+        image: grafana/grafana:6.0.1
+        container_name: grafana
+        hostname: grafana
+        restart: always
+        depends_on:
+            - influxdb
+        ports:
+            - '3000:3000'
+        volumes:
+            - './grafana/data:/var/lib/grafana'
+            - './grafana/log:/var/log/grafana'
+            - './grafana/conf:/etc/grafana'
+
+    frontend:
+        image: nginx:stable-alpine
+        container_name: frontend
+        hostname: frontend
+        restart: always
+        depends_on:
+            - influxdb
+        ports:
+            - '80:80'
+#        extra_hosts:
+#            - 'apihost:172.17.2.150'
+#            - 'apihost:127.0.0.1'
+        volumes:
+            - './frontend/data:/usr/share/nginx/html:ro'
+
+#    nocanc:
+#        image: nocanc:1.0.0
+#        container_name: nocanc
+#        hostname: nocanc
+#        restart: always
+#        depends_on:
+#            - mosquitto
+#        volumes:
+#            - ${PWD}/nocanc/nocanc.initial.conf:/.nocanc.conf
+
+
