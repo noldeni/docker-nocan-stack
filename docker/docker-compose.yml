@@ -32,10 +32,11 @@ services:
             - './influxdb/data:/var/lib/influxdb'
 
     grafana:
-        image: grafana/grafana:latest
+        image: grafana/grafana:6.0.1
         container_name: grafana
         hostname: grafana
         restart: always
+        user: '1000'
         depends_on:
             - influxdb
         ports:
